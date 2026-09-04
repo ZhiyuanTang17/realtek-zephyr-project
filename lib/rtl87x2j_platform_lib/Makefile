@@ -44,8 +44,8 @@ endif
 # Cortex-M33 + FPv5-SP hard-float (matches RTL87x2J Zephyr board config)
 CFLAGS ?= -mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -Os -g -std=gnu11
 
-# Root of the Realtek bee5-zephyr source tree (WSL default for D:\zcode\bee5-zephyr\realtek)
-RTK_BASE ?= /mnt/d/zcode/bee5-zephyr/realtek
+# Root of the Realtek bee5-zephyr source tree
+RTK_BASE ?= $(HOME)/bee5/realtek
 
 RTK_SOC    := $(RTK_BASE)/soc
 RTK_KERNEL := $(RTK_BASE)/kernel
@@ -153,8 +153,11 @@ RTK_FORCE_INCLUDES := \
 	-include boot_patch_define.h
 
 # Combined extra RTK flags (appended to whatever CFLAGS was passed in)
+# -Wno-expansion-to-defined: vendor headers (rfc_int.h, modem_portmacro.h) use
+# defined() inside macro arguments, which is non-portable but intentional.
 RTK_CFLAGS := $(RTK_INCLUDES) $(RTK_DEFINES) $(RTK_FORCE_INCLUDES) \
-	-fno-builtin
+	-fno-builtin \
+	-Wno-expansion-to-defined
 
 # ---------------------------------------------------------------------------
 # Source files
@@ -164,13 +167,12 @@ RTK_CFLAGS := $(RTK_INCLUDES) $(RTK_DEFINES) $(RTK_FORCE_INCLUDES) \
 # si_flow_data_init and other symbols called from rtl87x2j_platform_init.c.
 # ---------------------------------------------------------------------------
 
-# Our platform init wrapper and stubs (this library's own code)
+# Our platform init wrapper and compatibility stubs (this library's own code)
 SRCS_LOCAL := \
 	src/rtl87x2j_platform_init.c \
-	src/main_full_stub.c
+	src/os_timer_patch_stub.c
 
 # Boot / system init
-# main_full.c → replaced by src/main_full_stub.c (PHY header GCC incompatibility)
 # mmu_ctrl.c  → REMOVED: mmu_setup not referenced by any kept object
 SRCS_BOOT := \
 	$(RTK_SOC)/boot/eflash_boot/system_init.c \
@@ -226,13 +228,13 @@ SRCS_RXI300 := \
 
 # Utilities / system services
 # crc16btx.c   → REMOVED: btxfcs/crc16_ibm not referenced by any kept object
-# timestamp.c  → REMOVED: timestamp_init() is commented out in Zephyr path;
-#                          timestamp_* not referenced by any kept object
 SRCS_UTIL := \
 	$(RTK_KERNEL)/util/src/occd_parser.c \
+	$(RTK_KERNEL)/util/src/utils.c \
 	$(RTK_KERNEL)/sys/src/critical_section/critical_section.c \
 	$(RTK_KERNEL)/sys/src/sys_list.c \
-	$(RTK_KERNEL)/sys/src/sys_reset/sys_reset_port/rtl87x2j/sys_reset_nvic.c
+	$(RTK_KERNEL)/sys/src/sys_reset/sys_reset_port/rtl87x2j/sys_reset_nvic.c \
+	$(RTK_KERNEL)/sys/src/timestamp/rtl87x2j/timestamp.c
 
 # Logging subsystem
 SRCS_LOG := \
@@ -247,18 +249,30 @@ SRCS_LOG := \
 SRCS_DBG := \
 	$(RTK_KERNEL)/debug/src/assert_handler.c
 
-# PHY (RF / modem)
-# NOTE: PHY sources are NOT compiled into this lib.
-# With ZEPHYR_SUPPORT=1, main_full() returns immediately without touching PHY.
-# The upstream phy_utils.h uses GCC-incompatible empty variadic macros so
-# the sources cannot be compiled here. PHY init is Zephyr's responsibility.
-SRCS_PHY :=
+# PHY (RF / modem / thermal)
+# These sources use GNU empty variadic macro handling in phy_utils.h, so this
+# external library is compiled as GNU C17 by CMakeLists.txt.
+SRCS_PHY := \
+	$(RTK_SOC)/phy/portable/src/modem_port.c \
+	$(RTK_SOC)/phy/portable/src/phy_port.c \
+	$(RTK_SOC)/phy/portable/src/phy_test_port.c \
+	$(RTK_SOC)/phy/portable/src/phy_utils_port.c \
+	$(RTK_SOC)/phy/portable/src/rfc_port.c \
+	$(RTK_SOC)/phy/portable/src/thermal_port.c \
+	$(RTK_SOC)/phy/common/src/modem.c \
+	$(RTK_SOC)/phy/common/src/phy.c \
+	$(RTK_SOC)/phy/common/src/phy_test.c \
+	$(RTK_SOC)/phy/common/src/phy_utils.c \
+	$(RTK_SOC)/phy/common/src/rfc.c \
+	$(RTK_SOC)/phy/common/src/thermal.c \
+	$(RTK_SOC)/phy/init_flow/phy_init.c \
+	$(RTK_SOC)/phy/script/phy_script.c \
+	$(RTK_SOC)/phy/thermal_driver/thermal_driver.c \
+	$(RTK_SOC)/hci/src/hci_phy_power_vendor.c
 
 # Power management
 # wakeup_init, amu_init, amu_script_init, power_manager_init, platform_pm_init
 # are all in the PROVIDE() list → include their source files.
-# phy_init / phy_hw_control_init → PHY sources cannot be compiled with GCC
-#   (empty variadic macro issue in phy_utils.h); left as PROVIDE() fallback.
 SRCS_PM := \
 	$(RTK_SOC)/power/pck600/ppu.c \
 	$(RTK_SOC)/power/pck600/pck600.c \
@@ -266,6 +280,7 @@ SRCS_PM := \
 	$(RTK_SOC)/power/pmu/pmu.c \
 	$(RTK_SOC)/power/pmu/pcsm.c \
 	$(RTK_SOC)/pm/common/src/power_manager.c \
+	$(RTK_SOC)/pm/portable/src/power_manager_port.c \
 	$(RTK_SOC)/pm/power_manager_unit_platform/power_manager_unit_platform.c \
 	$(RTK_SOC)/amu/amu.c
 
@@ -278,8 +293,10 @@ SRCS_CLK := \
 	$(RTK_SOC)/clock/eflash_boot/clock_manager.c
 
 # Staging / platform interface shims
-# NOTE: platform_interface.c includes rtl_pinmux.h which has PHY deps;
-# excluded since it is only used by the BT stack, not by platform init.
+# patch_os_timer_max_num_get (the only symbol from platform_interface.c used by
+# the Zephyr integration) is provided as a NULL-initialised stub in
+# src/os_timer_patch_stub.c; osif_zephyr_patch.c assigns the real function
+# pointer during os_zephyr_patch_init().
 SRCS_STAGING :=
 
 # OS interface
@@ -313,6 +330,11 @@ SRCS_FMC := \
 	$(RTK_DRIVER)/fmc/src/eflash/rtl87x2j/eflash_driver.c \
 	$(RTK_DRIVER)/fmc/src/eflash_api/eflash.c
 
+# AES interface used by rot_ctrl.c, plus its CN4 hardware implementation
+SRCS_CRYPTO := \
+	$(RTK_DRIVER)/crypto/src/crypto_interface/symmetric/aes_interface.c \
+	$(RTK_DRIVER)/crypto/src/hardware_driver/cn4/symmetric/aes_engine_driver.c
+
 # All sources
 SRCS := \
 	$(SRCS_LOCAL) \
@@ -332,7 +354,8 @@ SRCS := \
 	$(SRCS_MP_HCI) \
 	$(SRCS_SCH) \
 	$(SRCS_OTP) \
-	$(SRCS_FMC)
+	$(SRCS_FMC) \
+	$(SRCS_CRYPTO)
 
 # ---------------------------------------------------------------------------
 # Object file derivation
@@ -352,19 +375,23 @@ all: $(LIB_DIR)/librtl87x2j_platform_lib.a
 
 $(LIB_DIR)/librtl87x2j_platform_lib.a: $(OBJS)
 	@mkdir -p $(LIB_DIR)
-	$(AR) -rcs $@ $^
+	@$(AR) -rcs $@ $^
 	@echo "[rtl87x2j_platform_lib] Built: $@"
 
 # Generic compile rule — one per source file, evaluated by $(foreach)
 define compile_rule
 $(call src_to_obj,$(1)): $(1)
 	@mkdir -p $(OBJ_DIR)
-	$(CC) -c $(CFLAGS) $(RTK_CFLAGS) \
+	@$(CC) -c $(CFLAGS) $(RTK_CFLAGS) $(2) \
 	    -MD -MF $$(patsubst %.o,%.d,$(call src_to_obj,$(1))) \
 	    -o $(call src_to_obj,$(1)) $(1)
 endef
 
-$(foreach s,$(SRCS),$(eval $(call compile_rule,$(s))))
+$(foreach s,$(filter-out $(RTK_KERNEL)/logging/src/log_format.c,$(SRCS)), \
+	$(eval $(call compile_rule,$(s))))
+# log_format.c returns NULL from a uint32_t function; keep the vendor workaround
+# local so new int-conversion bugs in the rest of the library remain errors.
+$(eval $(call compile_rule,$(RTK_KERNEL)/logging/src/log_format.c,-Wno-error=int-conversion))
 
 # Include auto-generated dependency files (silently absent on first build)
 -include $(OBJS:.o=.d)

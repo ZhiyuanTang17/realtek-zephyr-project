@@ -39,8 +39,8 @@ cd realtek-zephyr-project/lib/rtl87x2j_platform_lib
 make \
   CC=arm-zephyr-eabi-gcc \
   AR=arm-zephyr-eabi-ar \
-  CFLAGS="-mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -Os" \
-  RTK_BASE=/mnt/d/zcode/bee5-zephyr/realtek
+  CFLAGS="-mcpu=cortex-m33 -mthumb -mfpu=fpv5-sp-d16 -mfloat-abi=hard -Os -std=gnu17" \
+  RTK_BASE=$HOME/bee5/realtek
 ```
 
 Output: `lib/librtl87x2j_platform_lib.a`
@@ -59,15 +59,18 @@ target_link_libraries(app PUBLIC rtl87x2j_platform_lib)
 ## Source dependencies
 
 All `.c` files are compiled from the Realtek `bee5-zephyr` source tree.
-Set `RTK_BASE` (default: `/mnt/d/zcode/bee5-zephyr/realtek`) to point to
-your checkout.
+Set `RTK_BASE` (default: `$HOME/bee5/realtek`) to point to your checkout.
+The PHY sources require GNU empty-variadic-macro semantics, so standalone
+builds must use a GNU C dialect such as `-std=gnu11` or `-std=gnu17`; Zephyr
+integration uses GNU C17 only for this external library.
 
 ## Excluded modules
 
 The following Keil project modules are **not** compiled into this library:
 
 - `secure_boot/` — `secure_boot.c`, `image_decryption.c`, `signature_verify.c`, `mac_verify.c`, `secure_version.c`
-- `driver/crypto/` — AES/SHA2 engine, ECC, uECC (only used by secure_boot)
+- Most of `driver/crypto/` — only the AES interface and CN4 AES engine used
+  by `rot_ctrl.c` are included; SHA2, ECC, and uECC remain excluded
 - `dfu/` — `comp_file.c`, `boot_fw_activation.c`, `dfu_cfg.c`
 - `external/lzma1806/LzmaDec.c` — DFU compression
 - `boot_patch_entry.c` — replaced by `src/rtl87x2j_platform_init.c`

@@ -32,16 +32,17 @@ if(DEFINED CMAKE_C_COMPILER_TARGET)
   set(target_flag "--target=${CMAKE_C_COMPILER_TARGET}")
 endif()
 
+# phy_utils.h relies on GNU empty-variadic-macro handling. Keep that extension
+# local to the vendor library instead of enabling it for the whole Zephyr image.
 set(rtl87x2j_platform_lib_cflags
-    "${target_flag} ${zephyr_includes} ${zephyr_definitions} ${zephyr_options} ${zephyr_system_includes}"
+    "${target_flag} ${zephyr_includes} ${zephyr_definitions} ${zephyr_options} ${zephyr_system_includes} -std=gnu17"
 )
 
 # ---------------------------------------------------------------------------
 # RTK_BASE: root of the Realtek bee5-zephyr source tree
 # ---------------------------------------------------------------------------
-if(NOT DEFINED RTK_BASE)
-  set(RTK_BASE "/mnt/d/zcode/bee5-zephyr/realtek")
-endif()
+set(RTK_BASE "$ENV{HOME}/bee5/realtek" CACHE PATH
+    "Root of the Realtek bee5-zephyr source tree")
 
 # ---------------------------------------------------------------------------
 # ExternalProject: build the library via the companion Makefile
@@ -77,6 +78,7 @@ ExternalProject_Add(
     RTK_BASE=${RTK_BASE}
   INSTALL_COMMAND ""
   BUILD_BYPRODUCTS ${RTL87X2J_PLATFORM_LIB_FILE}
+  USES_TERMINAL_BUILD TRUE
 )
 
 # ---------------------------------------------------------------------------
