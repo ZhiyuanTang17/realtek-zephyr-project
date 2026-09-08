@@ -282,6 +282,32 @@ void rtl87x2j_platform_early_init(void)
      *     Required before any code that calls the eFlash API. */
     eflash_assign_func_pointer();
 
+    /* E3b. Defensively clear platform-lib patch pointers that exist in mcuboot
+     *      but are GC-eliminated in the current smp_svr build.
+     *
+     *      Background: mcuboot places these BSS variables at addresses that fall
+     *      inside smp_svr's smp_work_queue_stack noinit region (0x200037c0-
+     *      0x200057c0).  CONFIG_INIT_STACKS fills that region with 0xAA, turning
+     *      each pointer into 0xAAAAAAAA.  Today these functions are not called
+     *      from smp_svr so the variables are GC-eliminated and the corrupted
+     *      mcuboot addresses are never read.  However, if future application
+     *      code links in any of these functions the linker will allocate the
+     *      patch variable in smp_svr's own BSS (zero-initialised = NULL), so
+     *      the corruption is invisible — but this explicit NULL assignment
+     *      provides a structural guarantee that is independent of link-time GC.
+     */
+    extern bool (*patch_parse_sys_cfg_to_mem)();
+    extern bool (*patch_RAP_Cmd)();
+    extern bool (*patch_ram_power_control_init)(void);
+    extern bool (*patch_timestamp_get_counter)();
+    extern bool (*patch_timestamp_get_ms)();
+
+    patch_parse_sys_cfg_to_mem    = NULL;
+    patch_RAP_Cmd                 = NULL;
+    patch_ram_power_control_init  = NULL;
+    patch_timestamp_get_counter   = NULL;
+    patch_timestamp_get_ms        = NULL;
+
     /* E4. Initialize the RXI300 AHB bus fabric and update its IRQ routing.
      *     Skipped when the AON OTP IS_RXI300_DISABLE flag indicates the bus
      *     fabric is not present on this die variant. */

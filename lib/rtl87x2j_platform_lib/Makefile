@@ -170,7 +170,8 @@ RTK_CFLAGS := $(RTK_INCLUDES) $(RTK_DEFINES) $(RTK_FORCE_INCLUDES) \
 # Our platform init wrapper and compatibility stubs (this library's own code)
 SRCS_LOCAL := \
 	src/rtl87x2j_platform_init.c \
-	src/os_timer_patch_stub.c
+	src/os_timer_patch_stub.c \
+	src/critical_section.c
 
 # Boot / system init
 # mmu_ctrl.c  → REMOVED: mmu_setup not referenced by any kept object
@@ -230,8 +231,6 @@ SRCS_RXI300 := \
 # crc16btx.c   → REMOVED: btxfcs/crc16_ibm not referenced by any kept object
 SRCS_UTIL := \
 	$(RTK_KERNEL)/util/src/occd_parser.c \
-	$(RTK_KERNEL)/util/src/utils.c \
-	$(RTK_KERNEL)/sys/src/critical_section/critical_section.c \
 	$(RTK_KERNEL)/sys/src/sys_list.c \
 	$(RTK_KERNEL)/sys/src/sys_reset/sys_reset_port/rtl87x2j/sys_reset_nvic.c \
 	$(RTK_KERNEL)/sys/src/timestamp/rtl87x2j/timestamp.c
