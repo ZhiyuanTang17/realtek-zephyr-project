@@ -52,12 +52,14 @@ RTK_KERNEL := $(RTK_BASE)/kernel
 RTK_DRIVER := $(RTK_BASE)/driver
 
 # ---------------------------------------------------------------------------
-# Include paths  (mirrors the Keil project include list, Linux-compatible)
-# The lib's own include/ directory takes priority so our boot_patch_define.h
-# shadows the Keil-only backslash-path version.
+# Include paths  (mirrors the Keil project include list)
+# private_include must precede the vendor bootloader directory so GCC uses the
+# Linux-compatible boot_patch_define.h workaround described in README.rst.
 # ---------------------------------------------------------------------------
 RTK_INCLUDES := \
+	-I$(CURDIR)/private_include \
 	-I$(CURDIR)/include \
+	-I$(RTK_SOC)/flash_proj/bootloader/inc \
 	-I$(RTK_SOC)/boot/rom_boot \
 	-I$(RTK_SOC)/boot/eflash_boot \
 	-I$(RTK_SOC)/rxi300 \
@@ -146,7 +148,7 @@ RTK_DEFINES := \
 	-DZEPHYR_SUPPORT=1
 
 # Force-include headers (mirrors Keil "--include" flags).
-# Our include/ directory overrides boot_patch_define.h with a Linux version.
+# private_include/ overrides the vendor boot_patch_define.h with a Linux version.
 RTK_FORCE_INCLUDES := \
 	-include bee5_rom_defines.h \
 	-include cpu_setting.h \

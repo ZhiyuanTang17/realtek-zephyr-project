@@ -15,6 +15,61 @@ linked into ``app`` and the normal Zephyr ELF and binary files are produced.
 The user runs only ``west build``; there is no need to invoke the library
 Makefile directly.
 
+Header layout
+*************
+
+The platform library separates its public API from headers used only while
+building the archive:
+
+.. code-block:: text
+
+   platform_lib/
+   |-- include/
+   |   `-- rtl87x2j_platform_init.h
+   `-- private_include/
+       `-- boot_patch_define.h
+
+``include/rtl87x2j_platform_init.h`` is the public interface. It is used by the
+library implementation and exported through the ``rtl87x2j_platform_lib`` CMake
+target for consumers such as the RTL87X2J SoC initialization code. There is one
+canonical copy; do not duplicate it in the Zephyr SoC or HAL trees.
+
+The file under ``private_include/`` is an implementation detail and is not
+exported to consumers. ``boot_patch_section.h`` needs no compatibility changes,
+so the build uses the vendor copy from
+``${RTK_BASE}/soc/flash_proj/bootloader/inc`` directly.
+
+boot_patch_define.h workaround
+******************************
+
+The vendor header is located at
+``${RTK_BASE}/soc/flash_proj/bootloader/inc/boot_patch_define.h``. It contains
+Keil/Windows-style backslash-relative includes, for example:
+
+.. code-block:: c
+
+   #include "..\\..\\..\\boards\\config\\memory\\rtl87x2j\\mem_config.h"
+
+The ARM GCC build on Linux does not interpret those paths as directory
+separators. Merely adding the vendor header directory with ``-I`` therefore
+finds the header but then fails while processing its nested includes.
+
+As a temporary compatibility workaround, ``private_include/boot_patch_define.h``
+contains the equivalent RTL87X2J definitions and uses portable flat include
+names. The Makefile intentionally orders include directories as follows:
+
+.. code-block:: make
+
+   -I$(CURDIR)/private_include
+   -I$(CURDIR)/include
+   -I$(RTK_SOC)/flash_proj/bootloader/inc
+
+It then force-includes ``boot_patch_define.h``. This causes GCC to select the
+private portable header while retaining the vendor bootloader include directory
+for other headers. Once the upstream vendor header uses portable include paths,
+the private workaround can be removed and the vendor header can be used
+directly.
+
 Building
 ********
 
