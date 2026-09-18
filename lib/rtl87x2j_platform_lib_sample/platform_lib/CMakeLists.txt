@@ -15,9 +15,10 @@ if(DEFINED CMAKE_C_COMPILER_TARGET)
 endif()
 
 # PHY headers require GNU empty-variadic-macro behavior. Put gnu17 last so it
-# takes precedence over the language mode inherited from Zephyr.
+# takes precedence over the language mode inherited from Zephyr. Zephyr also
+# exports -g/-gdwarf-*; the final -g0 prevents debug sections in this archive.
 set(rtl87x2j_platform_cflags
-    "${target_flag} ${zephyr_includes} ${zephyr_definitions} ${zephyr_options} ${zephyr_system_includes} -std=gnu17")
+    "${target_flag} ${zephyr_includes} ${zephyr_definitions} ${zephyr_options} ${zephyr_system_includes} -std=gnu17 -g0")
 
 if(NOT RTK_BASE)
   set(RTK_BASE "$ENV{HOME}/bee5/realtek")

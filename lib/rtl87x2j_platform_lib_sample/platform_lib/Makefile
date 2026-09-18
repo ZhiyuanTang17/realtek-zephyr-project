@@ -308,8 +308,7 @@ SRCS_OS := \
 	$(RTK_KERNEL)/os/osif/src/os_sync.c \
 	$(RTK_KERNEL)/os/osif/src/os_task.c \
 	$(RTK_KERNEL)/os/osif/src/os_timer.c \
-	$(RTK_KERNEL)/os/osif/src/os_pm.c \
-	$(RTK_KERNEL)/os/freertos/portable/MemMang/rtl87x2j/heap_4_default.c
+	$(RTK_KERNEL)/os/osif/src/os_pm.c
 
 # MP test / HCI vendor commands
 # Not called during platform init; excluded to reduce compile-time dependencies.
