@@ -381,7 +381,7 @@ $(LIB_DIR)/librtl87x2j_platform_lib.a: $(OBJS)
 define compile_rule
 $(call src_to_obj,$(1)): $(1)
 	@mkdir -p $(OBJ_DIR)
-	@$(CC) -c $(CFLAGS) $(RTK_CFLAGS) $(2) \
+	@$(CC) -c $(RTK_CFLAGS) $(CFLAGS) $(2) \
 	    -MD -MF $$(patsubst %.o,%.d,$(call src_to_obj,$(1))) \
 	    -o $(call src_to_obj,$(1)) $(1)
 endef
