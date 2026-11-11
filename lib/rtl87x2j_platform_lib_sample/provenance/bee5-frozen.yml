@@ -7,10 +7,6 @@ manifest:
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/sdk
     revision: c6ca219196ab94cf43c4a7b6fb428c02abc6b26f
     path: realtek
-  - name: bin-rtl87x2j
-    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/bin/rtl87x2j
-    revision: 5231ca2fe65fda6ad8cd8684d3857bbc98c3e600
-    path: realtek/bin/rtl87x2j
   - name: driver
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver
     revision: 1151a12cff8588b1f59ac6cba09387384f051bd4

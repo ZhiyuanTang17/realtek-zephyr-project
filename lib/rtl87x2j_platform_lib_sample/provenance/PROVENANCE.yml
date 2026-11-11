@@ -13,10 +13,10 @@ lib_project:
   name: realtek-zephyr-project
   path: "lib/rtl87x2j_platform_lib_sample"
   branch: "rtl87x2j-platform-lib"
-  commit: "7248af2d6e0ffb81655a379ef0c09c80d81ee08f"
+  commit: "e747fd889e946a4ece450a57e4956b652cbcf0a1"
 
 bee5_manifest:
-  file: "bee5/rtl87x2j/bee5-v0-zephyr.yml"
+  file: "bee5/rtl87x2j/bee5-frozen-2026-11-05.yml"
   branch: "west"
   commit: "688a843fbac9289279196b6da56ca9d6c606b881"
 
@@ -24,9 +24,6 @@ sources:
   sdk:
     commit: "c6ca219196ab94cf43c4a7b6fb428c02abc6b26f"
     describe: "bb3-sdk-v0.0.4-1598-gc6ca219196"
-  bin-rtl87x2j:
-    commit: "5231ca2fe65fda6ad8cd8684d3857bbc98c3e600"
-    describe: "5231ca2"
   driver:
     commit: "1151a12cff8588b1f59ac6cba09387384f051bd4"
     describe: "bbpro3-driver-v0.0.0-38-g1151a12c"
@@ -38,7 +35,7 @@ sources:
     describe: "bee5-crypto-bl-v0.0.1-17-g7882e35"
   kernel:
     commit: "6b3fe8e733227d15eeeced48f8d8a12b6c8ff3a8"
-    describe: "bb3-kernel-v0.0.3-103-g6b3fe8e7"
+    describe: "bb3-kernel-v0.0.3-103-g6b3fe8e73"
   soc:
     commit: "f5a964c5429fd8f4b359133ed0afabe5dcae426f"
     describe: "bee5-soc-bl-v0.0.0-33-gf5a964c5"
