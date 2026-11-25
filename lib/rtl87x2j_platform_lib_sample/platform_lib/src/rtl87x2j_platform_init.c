@@ -440,7 +440,7 @@ void rtl87x2j_platform_late_init(void)
     /* L5. Thermal tracking: start the TMETER_FW_IRQn periodic handler which
      *     monitors die temperature and adjusts RF / PMU parameters in real time
      *     to compensate for thermal drift. */
-   thermal_tracking_init(); /* also updates TMETER_FW_IRQn vector */
+    thermal_tracking_init(); /* also updates TMETER_FW_IRQn vector */
 
     /* L6. AMU (Analog Measurement Unit): load the ROM-defined measurement
      *     script, then start the continuous background measurement engine. */

@@ -157,8 +157,11 @@ RTK_DEFINES := \
 
 # Force-include headers (mirrors Keil "--include" flags).
 # private_include/ overrides the vendor boot_patch_define.h with a Linux version.
+# rom_defines_override.h must follow bee5_rom_defines.h: it forces
+# CONFIG_LOG_DIRECT_USER to 0 without modifying the vendor header.
 RTK_FORCE_INCLUDES := \
 	-include bee5_rom_defines.h \
+	-include rom_defines_override.h \
 	-include cpu_setting.h \
 	-include boot_patch_define.h
 
