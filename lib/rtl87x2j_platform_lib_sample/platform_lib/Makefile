@@ -61,6 +61,7 @@ RTK_INCLUDES := \
 	-I$(CURDIR)/private_include \
 	-I$(CURDIR)/include \
 	-I$(RTK_PATCH)/sys_patch/inc \
+	-I$(RTK_PATCH)/amu \
 	-I$(RTK_PATCH)/phy/common/inc \
 	-I$(RTK_PATCH)/phy/common/inc_int \
 	-I$(RTK_PATCH)/phy/portable/inc \
@@ -206,6 +207,10 @@ PATCH_SRCS := \
 	$(RTK_PATCH)/sys_patch/src/patch_pcsm_imp.c \
 	$(RTK_PATCH)/sys_patch/src/patch_platform_imp.c \
 	$(RTK_PATCH)/sys_patch/src/patch_clock_imp.c \
+	$(RTK_PATCH)/sys_patch/src/patch_schedule_plan_imp.c \
+	$(RTK_PATCH)/sys_patch/src/patch_codec_imp.c \
+	$(RTK_PATCH)/amu/patch_amu_imp.c \
+	$(RTK_PATCH)/amu/patch_amu_script.c \
 	$(RTK_PATCH)/phy/common/src/patch_modem.c \
 	$(RTK_PATCH)/phy/common/src/patch_phy.c \
 	$(RTK_PATCH)/phy/common/src/patch_phy_test.c \
@@ -245,8 +250,6 @@ SRCS_CPU := \
 
 # Peripheral drivers
 SRCS_DRV := \
-	$(RTK_SOC)/driver/debug/src/device/rtl87x2j/debug_port.c \
-	$(RTK_SOC)/driver/debug/src/device/rtl87x2j/patch_debug_port_function.c \
 	$(RTK_SOC)/driver/dma/src/device/rtl_common/rtl_dma.c \
 	$(RTK_SOC)/driver/dma/src/device/rtl_common/patch_dma_function.c \
 	$(RTK_SOC)/driver/dma/src/device/rtl87x2j/rtl87x2j_dma.c \
