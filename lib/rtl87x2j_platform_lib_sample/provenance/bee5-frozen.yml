@@ -1,39 +1,30 @@
 manifest:
-  group-filter:
-  - -bthost
-  - -protected
   projects:
   - name: sdk
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/sdk
-    revision: c6ca219196ab94cf43c4a7b6fb428c02abc6b26f
+    revision: 2f20043315ba6fed516e5015eb32cdc5bd1d4f7b
     path: realtek
-  - name: driver
-    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver
-    revision: 1151a12cff8588b1f59ac6cba09387384f051bd4
-    path: realtek/driver
-    groups:
-    - driver
   - name: fmc
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver/fmc
-    revision: 3a0278b5a6348b50b17ca956154f6978795bc675
+    revision: fee296c350b3b9f87d59a7688a092d7ad5f45bc4
     path: realtek/driver/fmc
     groups:
     - fmc
   - name: crypto
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver/crypto
-    revision: 7882e35c57a96a66eff0eef187847f735be7c14a
+    revision: 1c06892557a6762cac84c17957f8bfad9bd0201a
     path: realtek/driver/crypto
     groups:
     - crypto
   - name: kernel
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/kernel
-    revision: 6b3fe8e733227d15eeeced48f8d8a12b6c8ff3a8
+    revision: 43805112e9a42803a6e73caaed137e008b584591
     path: realtek/kernel
     groups:
     - kernel
   - name: soc
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/soc
-    revision: f5a964c5429fd8f4b359133ed0afabe5dcae426f
+    revision: ad420ef6272e1430660ebdfa0a39ea09578eaad1
     path: realtek/soc
     groups:
     - soc
@@ -57,25 +48,25 @@ manifest:
     - romdriver
   - name: btcontroller
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/lowerstack
-    revision: 239caa5dd2d96910dcaaf4a904f23e600db7010d
+    revision: 878d5e28c60f83351fffae583794203c9f4ad37c
     path: realtek/subsys/bluetooth/bt_controller/src
     groups:
     - btcontroller
   - name: btcontrollerImage
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/lowerimage
-    revision: fb56703bed416628e545fedda6daacb689ccfbdc
+    revision: ad8323e44306a5f4ddad0a64255830c98fd20758
     path: realtek/subsys/bluetooth/bt_controller/image
     groups:
     - btcontrollerImage
   - name: patch
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/syspatch
-    revision: 90ff259612d5a01beb099099a71fee837e3bcc9b
+    revision: 490a320ce7dba8a64a05a2503b6e0f826aac14c9
     path: realtek/patch
     groups:
     - patch
   - name: PHYpatch
     url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PHY/Patch
-    revision: 748c26263b42ccecddb777ebf5d911c3d30a5eb4
+    revision: 885439b20415cc68ab15bdaf246323175a22df56
     path: realtek/patch/phy/common
     groups:
     - PHYpatch
@@ -87,8 +78,3 @@ manifest:
     - PMpatch
   self:
     path: manifest
-    west-commands: west_commands_extention/west-commands.yml
-    userdata:
-      owner: grace_guan
-      build-unmaintain-repo:
-      - bthost
